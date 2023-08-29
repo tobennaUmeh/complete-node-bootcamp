@@ -1,49 +1,47 @@
 const express = require('express');
 const app = express();
-const port = 3000;
-const fs = require('fs');
+const userRouter = require('./routes/userRoutes');
+const tourRouter = require('./routes/tourRoutes');
+const morgan = require('morgan');
 
+// MIDDLEWARES
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 app.use(express.json());
-// app.get('/', (req, res) => {
-//   res.status(200);
-//   res.json({ message: 'Hello From the server side!', app: 'Natours' });
-// });
+// console.log(process.env);
+// console.log(process.env);
+app.use(express.static(`${__dirname}/public`));
 
-// app.post('/', (req, res) => {
-//   res.status(200);
-//   res.send('You can send to this endpoint');
-// });
-
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`, 'utf-8')
-);
-
-app.get('/api/v1/tours', (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    results: tours.length,
-    data: {
-      tours,
-    },
-  });
+app.use((req, res, next) => {
+  req.requestTime = new Date().toUTCString();
+  console.log('hello form Middleware');
+  next();
 });
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
 
-app.post('/api/v1/tours', (req, res) => {
-  // console.log(req.body);
-  const newId = tours[tours.length - 1].id + 1;
-  const newTour = { id: newId, ...req.body };
-  // const newTour = Object.assign({ id: newId }, req.body);
-  tours.push(newTour);
-  const toursJSON = JSON.stringify(tours);
-  fs.writeFile(
-    `${__dirname}/dev-data/data/tours-simple.json`,
-    toursJSON,
-    (err) => {
-      return console.log(err);
-    }
-  );
-  res.send('New tour add successfully');
-});
+// const tours = JSON.parse(
+//   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`, 'utf-8')
+// );
+
+// ROUTE HANDLERS
+
+// ROUTES
+// app.get('/api/v1/tours', getAllTours);
+// app.post('/api/v1/tours', createTours);
+// app.get('/api/v1/tours/:id', getTour);
+// app.patch('/api/v1/tours/:id', updatedTour);
+// app.delete('/api/v1/tours/:id', deleteTour);
+
+//ROUTER
+
+// ROUTES
+// const tourRouter = express.Router();
+// tourRouter.route('/').get(getAllTours).post(createTours);
+// tourRouter.route('/:id').get(getTour).patch(updatedTour).delete(deleteTour);
+
+// MOUNTING ROUTES
 
 // app.delete('/api/v1/tours', (req, res) => {
 //   res.status(204).json({
@@ -52,4 +50,7 @@ app.post('/api/v1/tours', (req, res) => {
 //   });
 // });
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+// SERVER
+// app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+module.exports = app;
