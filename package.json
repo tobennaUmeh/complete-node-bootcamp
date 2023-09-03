@@ -12,8 +12,5 @@
 		"vite": "^2.4.4",
 		"cross-env": "^7.0.3"
 	},
-	"license": {
-		"name": "MIT",
-		"url": "https://opensource.org/licenses/MIT"
-	}
+	"license": "ISC"
 }
