@@ -1,18 +1,46 @@
 const express = require('express');
-const fs = require('fs');
+
 const {
   getAllUsers,
-  createUser,
+  // createUser,
   getUser,
   updateUser,
   deleteUser,
-  checkID,
+  updateMe,
+  deleteMe,
+  // checkID,
 } = require('../controllers/userController');
+const {
+  signup,
+  login,
+  protect,
+  restrictTo,
+  forgotPassword,
+  resetPassword,
+  updatePassword,
+} = require('../controllers/authController');
 
 const router = express.Router();
 
-router.param('id', checkID);
-router.route('/').get(getAllUsers).post(createUser);
-router.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
+// router.param('id', checkID);
+router.post('/signup', signup);
+router.post('/login', login);
+router.post('/forgotPassword', forgotPassword);
+router.patch('/resetPassword/:token', resetPassword);
+router.patch(`/updateMyPassword`, protect, updatePassword);
+router.patch(`/updateMe`, protect, updateMe);
+router.delete(`/deleteMe`, protect, deleteMe);
+// {
+//   validateBeforeSave: false;
+// }
+
+router
+  .route('/')
+  .get(protect, restrictTo('admin'), getAllUsers);
+router
+  .route('/:id')
+  .get(protect, restrictTo('admin'), getUser)
+  .patch(protect, restrictTo('admin'), updateUser)
+  .delete(protect, restrictTo('admin'), deleteUser);
 
 module.exports = router;
