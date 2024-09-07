@@ -32,7 +32,7 @@
 //     return result;
 //   }, {});
 // };
-class apiFeatures {
+class APIFeatures {
   constructor(query, queryString) {
     this.query = query;
     this.queryString = queryString;
@@ -85,4 +85,5 @@ class apiFeatures {
     return this;
   }
 }
-exports.apiFeatures = apiFeatures;
+
+module.exports = APIFeatures;
