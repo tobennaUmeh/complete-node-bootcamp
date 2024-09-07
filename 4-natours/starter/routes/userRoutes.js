@@ -27,20 +27,20 @@ router.post('/signup', signup);
 router.post('/login', login);
 router.post('/forgotPassword', forgotPassword);
 router.patch('/resetPassword/:token', resetPassword);
-router.patch(`/updateMyPassword`, protect, updatePassword);
-router.patch(`/updateMe`, protect, updateMe);
-router.delete(`/deleteMe`, protect, deleteMe);
+router.use(protect);
+router.patch(`/updateMyPassword`, updatePassword);
+router.patch(`/updateMe`, updateMe);
+router.delete(`/deleteMe`, deleteMe);
 // {
 //   validateBeforeSave: false;
 // }
 
-router
-  .route('/')
-  .get(protect, restrictTo('admin'), getAllUsers);
+router.use(restrictTo('admin'));
+router.route('/').get(getAllUsers);
 router
   .route('/:id')
-  .get(protect, restrictTo('admin'), getUser)
-  .patch(protect, restrictTo('admin'), updateUser)
-  .delete(protect, restrictTo('admin'), deleteUser);
+  .get(getUser)
+  .patch(updateUser)
+  .delete(deleteUser);
 
 module.exports = router;
