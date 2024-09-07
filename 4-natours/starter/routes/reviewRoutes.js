@@ -15,18 +15,30 @@ const {
 
 const router = express.Router({ mergeParams: true });
 
-router.route('/').get(getAllReviews);
+router.use(protect);
 
-router.route('/user').get(protect, getAllUserReviews);
 router
-  .route('/:id')
+  .route('/')
+  .get(restrictTo('admin', 'user'), getAllReviews);
+
+router
+  .route('/')
+  .post(restrictTo('admin', 'user'), createReview);
+router
+  .route('/users')
+  .get(restrictTo('admin', 'user'), getAllUserReviews);
+
+router
+  .route('/:reviewId')
   .get(getReview)
-  .patch(updateReview)
-  .delete(deleteReview)
-  .post(protect, restrictTo('user'), createReview);
+  .patch(restrictTo('admin', 'user'), updateReview)
+  .delete(restrictTo('admin', 'user'), deleteReview);
+// router
+//   .route('/:tourId/reviews')
+//   .post(protect, createReview);
 
-router
-  .route('/tour/:tourId/reviews')
-  .post(protect, restrictTo('user'), createReview);
+// router
+//   .route('/users/:userId')
+//   .get(protect, restrictTo('admin'), getAllUserReviews);
 
 module.exports = router;
