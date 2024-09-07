@@ -57,14 +57,34 @@ exports.getOne = (Model, popOptions) => {
 
 exports.deleteOne = (Model) => {
   return catchAsync(async (req, res, next) => {
-    const doc = await Model.findByIdAndDelete(
-      req.params.id
-    );
+    if (req.params.reviewId) {
+      req.params.id = req.params.reviewId;
+    }
+
+    // Retrieve the document first
+    const doc = await Model.findById(req.params.id);
     if (!doc) {
       return next(
         new AppError('No document found with that ID', 404)
       );
     }
+
+    // Check if the user is allowed to delete the document
+    if (
+      req.user.role !== 'admin' &&
+      !doc.checkUser(req.user)
+    ) {
+      return next(
+        new AppError(
+          'You can only delete your own review',
+          401
+        )
+      );
+    }
+
+    // Remove the document
+    await doc.remove();
+
     res.status(204).json({
       status: 'success',
       data: null,
@@ -97,15 +117,40 @@ exports.updateOne = (Model, updateOptions) => {
         )
       );
     }
-    // 2) Filtered out unwanted fields names that are not allowed to be updated
+
+    // 2) Filter out unwanted fields names that are not allowed to be updated
     const filteredBody = filterObj(
       req.body,
       ...updateOptions
     );
+
     if (req.params.reviewId) {
       req.params.id = req.params.reviewId;
     }
-    const doc = await Model.findByIdAndUpdate(
+
+    // Retrieve the document first
+    const doc = await Model.findById(req.params.id);
+    if (!doc) {
+      return next(
+        new AppError('No document found with that ID', 404)
+      );
+    }
+
+    // Check if the user is allowed to update the document
+    if (
+      req.user.role !== 'admin' &&
+      !doc.checkUser(req.user)
+    ) {
+      return next(
+        new AppError(
+          'You can only update your own account',
+          401
+        )
+      );
+    }
+
+    // 3) Update the document
+    const updatedDoc = await Model.findByIdAndUpdate(
       req.params.id,
       filteredBody,
       {
@@ -113,15 +158,11 @@ exports.updateOne = (Model, updateOptions) => {
         runValidators: true,
       }
     );
-    if (!doc) {
-      return next(
-        new AppError('No document found with that ID', 404)
-      );
-    }
+
     res.status(200).json({
       status: 'success',
       data: {
-        data: doc,
+        data: updatedDoc,
       },
     });
   });
